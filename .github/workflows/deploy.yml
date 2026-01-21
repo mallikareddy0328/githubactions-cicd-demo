@@ -1,59 +1,58 @@
-name: Build
+# name: Build
+# on:
+#     push:
+#         branches:
+#             - main
 
-on:
-    push:
-        branches:
-            - main
-
-jobs:
-    build-scan:
-        name: build job
-        runs-on: self-hosted
-        steps:
-            - name: build
-              uses: actions/checkout@v6
-            #   with:
-            #     fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-            - name: Build and analyse code scan
-              uses: SonarSource/sonarqube-scan-action@master
-              env:
-                    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-                    SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+# jobs:
+#     build-scan:
+#         name: build job
+#         runs-on: self-hosted
+#         steps:
+#             - name: build
+#               uses: actions/checkout@v6
+#             #   with:
+#             #     fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+#             - name: Build and analyse code scan
+#               uses: SonarSource/sonarqube-scan-action@master
+#               env:
+#                     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#                     SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         
-            - name: npm install dependencies
-              run: npm install
+#             - name: npm install dependencies
+#               run: npm install
 
-            - name: Trivy file scan
-              run: trivy fs . > trivyfs.txt
+#             - name: Trivy file scan
+#               run: trivy fs . > trivyfs.txt
 
-            - name : Docker Build and push
-              run: |
-                docker build -t tic-tac-toe .
-                docker tag tic-tac-toe mallikareddy/tic-tac-toe:latest
-                docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-                docker push mallikareddy/tic-tac-toe:latest
+#             - name : Docker Build and push
+#               run: |
+#                 docker build -t tic-tac-toe .
+#                 docker tag tic-tac-toe mallikareddy/tic-tac-toe:latest
+#                 docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+#                 docker push mallikareddy/tic-tac-toe:latest
 
-              env:
-               DOCKER_CLI_ACI: 1
+#               env:
+#                DOCKER_CLI_ACI: 1
 
-            # - name : Image Scan
-            #   run : trivy image mallikareddy/tic-tac-toe:latest > trivyimage.txt
+#             # - name : Image Scan
+#             #   run : trivy image mallikareddy/tic-tac-toe:latest > trivyimage.txt
 
-    deploy:
-        needs: build-scan
-        runs-on: self-hosted
-        steps: 
-            - name: docker pull image
-              run: docker pull mallikareddy/tic-tac-toe:latest
+#     deploy:
+#         needs: build-scan
+#         runs-on: self-hosted
+#         steps: 
+#             - name: docker pull image
+#               run: docker pull mallikareddy/tic-tac-toe:latest
 
-            - name: deploy to container
-              run: docker run -d --name game -p 3000:3000 mallikareddy/tic-tac-toe:latest
+#             - name: deploy to container
+#               run: docker run -d --name game -p 3000:3000 mallikareddy/tic-tac-toe:latest
 
-            - name: update kubeconfig
-              run: aws eks --region ap-south-1 update-kubeconfig --name EKS_CLOUD
+#             - name: update kubeconfig
+#               run: aws eks --region ap-south-1 update-kubeconfig --name EKS_CLOUD
 
-            - name: Deploy to kubernetes
-              run: kubectl apply -f deployment-service.yml
+#             - name: Deploy to kubernetes
+#               run: kubectl apply -f deployment-service.yml
     
 
 
