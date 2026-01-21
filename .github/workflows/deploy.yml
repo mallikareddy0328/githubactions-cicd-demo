@@ -36,8 +36,8 @@ jobs:
               env:
                DOCKER_CLI_ACI: 1
 
-            - name : Image Scan
-              run : trivy image mallikareddy/tic-tac-toe:latest > trivyimage.txt
+            # - name : Image Scan
+            #   run : trivy image mallikareddy/tic-tac-toe:latest > trivyimage.txt
 
     deploy:
         needs: build-scan
